@@ -1,5 +1,5 @@
 <?php
-require_once 'app/model/config.php';
+
 class EscuderiasModel {
     
     private $db;
@@ -46,18 +46,17 @@ class EscuderiasModel {
     }
 
 
-
     function get($id){
         $query = $this->db->prepare('SELECT * FROM escuderias WHERE id = ?');
         $query->execute([$id]);
-        $escuderia = $query->fetch(PDO::FETCH_OBJ);
+        $escuderias = $query->fetch(PDO::FETCH_OBJ);
 
-        return $escuderia;
+        return $escuderias;
     }
 
-    function insert($equipos, $puntos_equipo, $pos_equipos){
-        $query = $this->db->prepare("INSERT INTO escuderias (equipos, puntos_equipo, pos_equipos) VALUE (?, ?, ?)");
-        $query->execute([$equipos , $puntos_equipo, $pos_equipos]);
+    function insert($equipos, $description , $puntos_equipo, $pos_equipos, $id){
+        $query = $this->db->prepare("INSERT INTO escuderias (equipos, description, puntos_equipo, pos_equipos, id) VALUE (?, ?, ?, ?, ?)");
+        $query->execute([$equipos, $description , $puntos_equipo, $pos_equipos, $id]);
 
         return $this->db->lastInsertId();
     }

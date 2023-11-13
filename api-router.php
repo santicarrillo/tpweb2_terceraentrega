@@ -1,12 +1,9 @@
 <?php
     require_once 'app/model/config.php';
-
-    require_once 'app/model/user.model.php';
-
     require_once 'libs/Router.php';
 
     require_once 'app/controller/escuderias-api.controller.php';
-    require_once'app/controller/auth-api.controller.php';
+
     $router = new Router();
 
     
@@ -18,7 +15,7 @@
     $router->addRoute('escuderias/:ID', 'DELETE', 'EscuderiasApiController', 'deleteEscuderia');
     $router->addRoute('escuderias/:ID', 'PUT', 'EscuderiasApiController', 'editEscuderia');
     
-    $router->addRoute('auth/token', 'GET', 'UserApiController', 'getToken');
+    $router->addRoute('auth/token', 'GET', 'AuthApiController', 'getToken');
 
     $router->setDefaultRoute('EscuderiasApiController', 'error');
 

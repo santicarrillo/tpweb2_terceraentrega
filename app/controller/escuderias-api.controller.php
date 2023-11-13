@@ -1,7 +1,7 @@
 <?php
     require_once 'app/model/escuderias.model.php';
     require_once 'app/view/api.view.php';
-    require_once 'app/helpers/auth-api.helper.php';
+    //require_once 'app/helpers/auth-api.helper.php';
     
     class EscuderiasApiController {
         private $model;
@@ -13,7 +13,7 @@
         public function __construct(){
             $this->model = new EscuderiasModel();
             $this->view = new ApiView();
-            $this->authHelper = new AuthHelper();
+            //$this->authHelper = new AuthApiHelper();
             
             //lee el body del request
             $this->data = file_get_contents("php://input");
@@ -41,7 +41,7 @@
             $field = null;
             $value = null;
 
-            //Miembro b: filtrado
+            //Miembro B: filtrado
             if ((isset($_GET['field'])&& isset($_GET['value']))){
                 $value = $_GET['value'];
                 //se verifica que lo que se haya recibido por parametro GET pertenezca al array de opciones posibles
@@ -51,8 +51,7 @@
                 return $this->view->response("$field no es un campo existente de la tabla", 400);
             }
 
-            // alumno  A llama y ordena el listado
-            //Ordenado por un campo asc o desc Alumno A
+            // Miembro A: Ordenado por un campo asc o desc, llama y ordena el listado. 
             if ((isset($_GET['sort'])&&isset($_GET['order']))){
                 // Verifica que lo que se haya recibido por parametro GET pertenezca al array de opciones posibles
                 if (in_array($sort, $fields)&&in_array($order, $orderType)){
@@ -64,7 +63,7 @@
 
              }
 
-              //Paginacion Alumno A 
+              //Miembro A: paginacion  
             if ((isset($_GET['limit'])&&(isset($_GET['pag'])))){
                 if((int)$_GET['limit'] <= $total){
                     $limit = (int)$_GET['limit'];
@@ -100,7 +99,7 @@
 
         
         
-        // Miembro b: Obtener un elemento (escuderia) por ID
+        // Miembro B: Obtener un elemento (escuderia) por ID
         function get($params = null){
             $id = $params [':ID'];
             $escuderia = $this->model->get($id);
@@ -108,50 +107,37 @@
             if($escuderia){
                 $this->view->response($escuderia);
             } else {
-                $this->view->response("El escuderias con el id = $id no existe en el catalogo", 404);
+                $this->view->response("La escuderia con el id = $id no existe en el catalogo", 404);
             } 
         }
 
     
-        //Miembro b: POST, insertar o crear un elemento (piloto)
+        //Miembro B: POST, insertar o crear un elemento
         function insertEscuderia($params = null){
-          /*  $user = $this->authHelper->currentUser();
-            if(!$user) {
-                $this->view->response('Unauthorized', 401);
-                return;
-            }
 
-            if($user->role!='ADMIN') {
-                $this->view->response('Forbidden', 403);
+            /*if(!$this->authHelper->isLoggedIn()){
+                $this->view->response("No esta logeado", 401);
                 return;
             }*/
 
-
             $escuderias = $this->getData();
-            if (!empty($escuderias->equipos) && !empty($escuderias->puntos_equipo)&&!empty($escuderias->pos_equipos)){
-                 $id = $this->model->insert($escuderias->equipos, $escuderias->puntos_equipo, $escuderias->pos_equipos);
-                $this->view->response($escuderias, 201);
-            } else {
+
+            if (empty($escuderias->equipos)||empty($escuderias->description)||empty($escuderias->puntos_equipo)||empty($escuderias->pos_equipos)||empty($escuderias->id)){
                 $this->view->response("Complete los datos", 400);
+            } else {
+                $id = $this->model->insert($escuderias->equipos, $escuderias->description, $escuderias->puntos_equipo, $escuderias->pos_equipos, $escuderias->id);
+                $escuderias = $this->model->get($id);
+                $this->view->response('se ingresaron los datos correctamente', 201);
             }
         
         }
     
-
-        // se realiza la funcion de borrar un item
+        // Se realiza la funcion de borrar un item
         function deleteEscuderia($params = null){
-            /*$user = $this->authHelper->currentUser();
-            if(!$user) {
-                $this->view->response('Unauthorized', 401);
-                return;
-            }
-
-            if($user->role!='ADMIN') {
-                $this->view->response('Forbidden', 403);
+            /*if(!$this->authHelper->isLoggedIn()){
+                $this->view->response("No estas logeado", 401);
                 return;
             }*/
-
-
 
             $id = $params[':ID'];
             $escuderia = $this->model->get($id);
@@ -160,27 +146,22 @@
                 $this->view->response("Elemento con el id = $id eliminado con exito", 200);
 
             } else{
-                $this->view->response("la escuderia con el id = $id no existe", 404);
+                $this->view->response("La escuderia con el id = $id no existe", 404);
             }
         }
 
-        function editEscuderia($params = null){
-           /* $user = $this->authHelper->currentUser();
-            if(!$user) {
-                $this->view->response('Unauthorized', 401);
-                return;
-            }
 
-            if($user->role!='ADMIN') {
-                $this->view->response('Forbidden', 403);
-                return;
-            }*/
-        
+        //Miembro A: PUT, editar un elemento 
+        function editEscuderia($params = null){
+            /*if(!$this->authHelper->isLoggedIn()){
+                    $this->view->response("No estas logeado", 401);
+                    return;
+                }*/
+
             $id = $params[':ID'];
             $escuderias = $this->model->get($id);
             if($escuderias){
-                $escuderiasData = $this->getData();
-                var_dump($escuderiasData);
+                $escuderias = $this->getData();
                 if (empty($escuderias->equipos)||empty($escuderias->description)||empty($escuderias->puntos_equipo)||empty($escuderias->pos_equipos)){
                     $this->view->response("Complete los datos", 400);
                 } else {                
@@ -189,7 +170,7 @@
                     $this->view->response($escuderias, 201);
                 }
             } else {
-                $this->view->response("El producto con con id = $id no existe en el catalogo", 404);
+                $this->view->response("La escuderia con id = $id no existe en el catalogo", 404);
             }
        }
 
@@ -199,4 +180,7 @@
         }
 
 }
+
+
+
  
